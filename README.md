@@ -101,6 +101,7 @@ graph LR
 - **Summarization**:
   - `facebook/bart-large-cnn`
   - `t5-base`
+  - `or a better model for summarization`
 - **Question Generation**:
   - `mistralai/Mistral-7B-Instruct`
   - `tiiuae/falcon-7b-instruct`
