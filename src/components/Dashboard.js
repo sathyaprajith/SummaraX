@@ -1,15 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Dashboard.css';
-import ThemeSwitch from './ThemeSwitch';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import "./Dashboard.css";
+import ThemeSwitch from "./ThemeSwitch";
+import { useTheme } from "../context/ThemeContext";
 
 const Dashboard = () => {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const { isDarkMode } = useTheme();
   const navigate = useNavigate();
-
-  const handleThemeToggle = (e) => {
-    setIsDarkMode(e.target.checked);
-  };
 
   // Mock data for demonstration
   const summaryHistory = [
@@ -19,7 +16,7 @@ const Dashboard = () => {
       date: "2025-11-20",
       type: "Summary",
       pages: 15,
-      preview: "Machine learning is a subset of artificial intelligence..."
+      preview: "Machine learning is a subset of artificial intelligence...",
     },
     {
       id: 2,
@@ -27,7 +24,7 @@ const Dashboard = () => {
       date: "2025-11-19",
       type: "Q&A",
       pages: 8,
-      preview: "React Hooks allow you to use state and other React features..."
+      preview: "React Hooks allow you to use state and other React features...",
     },
     {
       id: 3,
@@ -35,7 +32,7 @@ const Dashboard = () => {
       date: "2025-11-18",
       type: "MCQs",
       pages: 12,
-      preview: "Binary trees, graphs, and advanced data structures..."
+      preview: "Binary trees, graphs, and advanced data structures...",
     },
     {
       id: 4,
@@ -43,32 +40,55 @@ const Dashboard = () => {
       date: "2025-11-17",
       type: "Notes",
       pages: 20,
-      preview: "Integration, differentiation, and limit problems..."
-    }
+      preview: "Integration, differentiation, and limit problems...",
+    },
   ];
 
   const stats = {
     totalSummaries: 24,
     totalPages: 387,
     hoursStudied: 42,
-    avgAccuracy: 94
+    avgAccuracy: 94,
   };
 
   return (
-    <div className={`dashboard ${isDarkMode ? 'dark-mode' : 'light-mode'}`}>
+    <div className={`dashboard ${isDarkMode ? "dark-mode" : "light-mode"}`}>
       {/* Header */}
       <header className="dashboard-header">
         <div className="container">
           <div className="header-content">
-            <div className="logo" onClick={() => navigate('/')}>SummaraX</div>
+            <div className="logo" onClick={() => navigate("/")}>
+              SummaraX
+            </div>
             <nav className="nav">
-              <a href="#" onClick={(e) => { e.preventDefault(); navigate('/'); }}>Home</a>
-              <a href="#" className="active">Dashboard</a>
-              <a href="#" onClick={(e) => { e.preventDefault(); navigate('/generator'); }}>Generator</a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/");
+                }}
+              >
+                Home
+              </a>
+              <a href="#" className="active">
+                Dashboard
+              </a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/generator");
+                }}
+              >
+                Generator
+              </a>
             </nav>
             <div className="header-actions">
-              <ThemeSwitch onChange={handleThemeToggle} />
-              <button className="btn-generate" onClick={() => navigate('/generator')}>
+              <ThemeSwitch />
+              <button
+                className="btn-generate"
+                onClick={() => navigate("/generator")}
+              >
                 + New Summary
               </button>
               <div className="user-profile">
@@ -153,7 +173,10 @@ const Dashboard = () => {
           <div className="quick-actions">
             <h2>Quick Actions</h2>
             <div className="actions-grid">
-              <div className="action-card" onClick={() => navigate('/generator')}>
+              <div
+                className="action-card"
+                onClick={() => navigate("/generator")}
+              >
                 <div className="action-icon">📝</div>
                 <h3>Create Summary</h3>
                 <p>Upload and summarize new content</p>

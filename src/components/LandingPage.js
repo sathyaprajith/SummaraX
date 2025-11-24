@@ -1,32 +1,57 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './LandingPage.css';
-import ThemeSwitch from './ThemeSwitch';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import "./LandingPage.css";
+import ThemeSwitch from "./ThemeSwitch";
+import { useTheme } from "../context/ThemeContext";
 
 const LandingPage = () => {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const { isDarkMode } = useTheme();
   const navigate = useNavigate();
 
-  const handleThemeToggle = (e) => {
-    setIsDarkMode(e.target.checked);
-  };
-
   return (
-    <div className={`landing-page ${isDarkMode ? 'dark-mode' : 'light-mode'}`}>
+    <div className={`landing-page ${isDarkMode ? "dark-mode" : "light-mode"}`}>
       {/* Header */}
       <header className="header">
         <div className="container">
           <div className="nav-wrapper">
             <div className="logo">SummaraX</div>
             <nav className="nav">
-              <a href="/" className="active">Home</a>
-              <a href="#" onClick={(e) => { e.preventDefault(); navigate('/dashboard'); }}>Dashboard</a>
-              <a href="#" onClick={(e) => { e.preventDefault(); navigate('/generator'); }}>Generator</a>
+              <a href="/" className="active">
+                Home
+              </a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/dashboard");
+                }}
+              >
+                Dashboard
+              </a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/generator");
+                }}
+              >
+                Generator
+              </a>
             </nav>
             <div className="header-buttons">
-              <ThemeSwitch onChange={handleThemeToggle} />
-              <button className="btn-login" onClick={() => navigate('/dashboard')}>Login</button>
-              <button className="btn-signup" onClick={() => navigate('/dashboard')}>Sign up</button>
+              <ThemeSwitch />
+              <button
+                className="btn-login"
+                onClick={() => navigate("/dashboard")}
+              >
+                Login
+              </button>
+              <button
+                className="btn-signup"
+                onClick={() => navigate("/dashboard")}
+              >
+                Sign up
+              </button>
             </div>
           </div>
         </div>
@@ -37,7 +62,7 @@ const LandingPage = () => {
         <div className="container">
           <div className="blob blob-yellow"></div>
           <div className="blob blob-orange"></div>
-          
+
           <div className="hero-content">
             <h1 className="hero-title">
               Don't make
@@ -46,14 +71,17 @@ const LandingPage = () => {
               <br />
               awkward
             </h1>
-            
+
             <p className="hero-subtitle">
-              No more fumbling for study materials or searching for last-minute notes.
-              Whether it's an exam, assignment, or project, SummaraX is easy to leverage 
-              with AI and keep the studying going straight from your notes.
+              No more fumbling for study materials or searching for last-minute
+              notes. Whether it's an exam, assignment, or project, SummaraX is
+              easy to leverage with AI and keep the studying going straight from
+              your notes.
             </p>
-            
-            <button className="btn-cta" onClick={() => navigate('/generator')}>Get started free</button>
+
+            <button className="btn-cta" onClick={() => navigate("/generator")}>
+              Get started free
+            </button>
           </div>
 
           <div className="hero-image">
@@ -82,8 +110,8 @@ const LandingPage = () => {
                 </div>
                 <div className="message-content">
                   <p className="message-label">To: AI Assistant</p>
-                  <textarea 
-                    className="message-input" 
+                  <textarea
+                    className="message-input"
                     placeholder="Great! Connecting with our base AI intelligence models just got easier.&#10;&#10;Here's what I need:&#10;&#10;Generate a summary for chapter 5."
                     readOnly
                   ></textarea>
@@ -109,9 +137,8 @@ const LandingPage = () => {
               <div className="step-icon icon-upload">📤</div>
               <h3>Upload your content</h3>
               <p>
-                When it's time to revise the topic you need, 
-                simply upload or paste your notes into 
-                their phone camera.
+                When it's time to revise the topic you need, simply upload or
+                paste your notes into their phone camera.
               </p>
             </div>
 
@@ -119,9 +146,8 @@ const LandingPage = () => {
               <div className="step-icon icon-generate">🤖</div>
               <h3>Generate materials</h3>
               <p>
-                Your AI model is linked to it so their contact 
-                information is already available. All they 
-                have to do is hit send.
+                Your AI model is linked to it so their contact information is
+                already available. All they have to do is hit send.
               </p>
             </div>
 
@@ -129,14 +155,15 @@ const LandingPage = () => {
               <div className="step-icon icon-study">📚</div>
               <h3>Study from your inbox</h3>
               <p>
-                All the stuff in the email you just sent 
-                makes it easy to remember who you are 
-                every one you met.
+                All the stuff in the email you just sent makes it easy to
+                remember who you are every one you met.
               </p>
             </div>
           </div>
 
-          <button className="btn-cta" onClick={() => navigate('/generator')}>Start Jiving</button>
+          <button className="btn-cta" onClick={() => navigate("/generator")}>
+            Start Jiving
+          </button>
         </div>
       </section>
 
@@ -145,7 +172,7 @@ const LandingPage = () => {
         <div className="container">
           <div className="footer-logo">SummaraX</div>
           <p className="footer-tagline">Get summaries and start jiving.</p>
-          
+
           <nav className="footer-nav">
             <a href="#about">About</a>
             <a href="#privacy">Privacy</a>
@@ -153,7 +180,9 @@ const LandingPage = () => {
             <a href="#contact">Contact</a>
           </nav>
 
-          <p className="copyright">© 2025 and its logo are trademarks of SummaraX.</p>
+          <p className="copyright">
+            © 2025 and its logo are trademarks of SummaraX.
+          </p>
         </div>
 
         <div className="blob blob-orange-footer"></div>

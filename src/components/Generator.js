@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Generator.css';
-import ThemeSwitch from './ThemeSwitch';
-import { generateContent, isAPIConfigured, getAPIKeyInfo } from '../api/gemini';
-import { extractTextFromFile, isPDF } from '../utils/pdfExtract';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import "./Generator.css";
+import ThemeSwitch from "./ThemeSwitch";
+import { useTheme } from "../context/ThemeContext";
+import { generateContent, isAPIConfigured, getAPIKeyInfo } from "../api/gemini";
+import { extractTextFromFile, isPDF } from "../utils/pdfExtract";
 
 const Generator = () => {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const { isDarkMode } = useTheme();
   const [selectedFile, setSelectedFile] = useState(null);
-  const [inputText, setInputText] = useState('');
-  const [generationType, setGenerationType] = useState('summary');
+  const [inputText, setInputText] = useState("");
+  const [generationType, setGenerationType] = useState("summary");
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -22,16 +23,12 @@ const Generator = () => {
     setApiKeyInfo(getAPIKeyInfo());
   }, []);
 
-  const handleThemeToggle = (e) => {
-    setIsDarkMode(e.target.checked);
-  };
-
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
       setSelectedFile(file);
       setError(null);
-      
+
       // If it's a PDF, extract text immediately
       if (isPDF(file)) {
         setIsExtractingPDF(true);
@@ -61,13 +58,13 @@ const Generator = () => {
   const handleGenerate = async () => {
     // Check if API is configured
     if (!isAPIConfigured()) {
-      setError('Please configure your Gemini API key in the .env file');
+      setError("Please configure your Gemini API key in the .env file");
       return;
     }
 
     // Check if there's input
     if (!inputText || inputText.trim().length === 0) {
-      setError('Please provide some text or upload a file');
+      setError("Please provide some text or upload a file");
       return;
     }
 
@@ -78,15 +75,15 @@ const Generator = () => {
     try {
       // Call Gemini API
       const generatedContent = await generateContent(generationType, inputText);
-      
+
       setResult({
         type: generationType,
         content: generatedContent,
-        raw: generatedContent.raw || null
+        raw: generatedContent.raw || null,
       });
     } catch (err) {
       setError(err.message);
-      console.error('Generation error:', err);
+      console.error("Generation error:", err);
     } finally {
       setIsGenerating(false);
     }
@@ -95,14 +92,14 @@ const Generator = () => {
   const handleCopyResult = () => {
     const textToCopy = JSON.stringify(result.content, null, 2);
     navigator.clipboard.writeText(textToCopy);
-    alert('Copied to clipboard!');
+    alert("Copied to clipboard!");
   };
 
   const handleDownloadResult = () => {
     const dataStr = JSON.stringify(result.content, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = `summarax-${result.type}-${Date.now()}.json`;
     link.click();
@@ -110,19 +107,39 @@ const Generator = () => {
   };
 
   return (
-    <div className={`generator ${isDarkMode ? 'dark-mode' : 'light-mode'}`}>
+    <div className={`generator ${isDarkMode ? "dark-mode" : "light-mode"}`}>
       {/* Header */}
       <header className="generator-header">
         <div className="container">
           <div className="header-content">
-            <div className="logo" onClick={() => navigate('/')}>SummaraX</div>
+            <div className="logo" onClick={() => navigate("/")}>
+              SummaraX
+            </div>
             <nav className="nav">
-              <a href="#" onClick={(e) => { e.preventDefault(); navigate('/'); }}>Home</a>
-              <a href="#" onClick={(e) => { e.preventDefault(); navigate('/dashboard'); }}>Dashboard</a>
-              <a href="#" className="active">Generator</a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/");
+                }}
+              >
+                Home
+              </a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/dashboard");
+                }}
+              >
+                Dashboard
+              </a>
+              <a href="#" className="active">
+                Generator
+              </a>
             </nav>
             <div className="header-actions">
-              <ThemeSwitch onChange={handleThemeToggle} />
+              <ThemeSwitch />
               <div className="user-profile">
                 <div className="avatar">S</div>
               </div>
@@ -138,15 +155,18 @@ const Generator = () => {
             {/* Left Panel - Input */}
             <div className="input-panel">
               <h1>Generate Study Materials</h1>
-              <p className="subtitle">Upload your content or paste text to get started</p>
+              <p className="subtitle">
+                Upload your content or paste text to get started
+              </p>
 
               {/* API Status */}
               {apiKeyInfo.total > 0 && (
                 <div className="api-status">
                   <span className="status-icon">🔑</span>
                   <span className="status-text">
-                    {apiKeyInfo.total} API key{apiKeyInfo.total > 1 ? 's' : ''} configured
-                    {apiKeyInfo.total > 1 && ' (Auto-rotation enabled)'}
+                    {apiKeyInfo.total} API key{apiKeyInfo.total > 1 ? "s" : ""}{" "}
+                    configured
+                    {apiKeyInfo.total > 1 && " (Auto-rotation enabled)"}
                   </span>
                 </div>
               )}
@@ -155,48 +175,64 @@ const Generator = () => {
               <div className="type-selector">
                 <h3>What would you like to generate?</h3>
                 <div className="type-options">
-                  <label className={`type-option ${generationType === 'summary' ? 'active' : ''}`}>
+                  <label
+                    className={`type-option ${
+                      generationType === "summary" ? "active" : ""
+                    }`}
+                  >
                     <input
                       type="radio"
                       name="type"
                       value="summary"
-                      checked={generationType === 'summary'}
+                      checked={generationType === "summary"}
                       onChange={(e) => setGenerationType(e.target.value)}
                     />
                     <span className="option-icon">📝</span>
                     <span className="option-label">Summary</span>
                   </label>
 
-                  <label className={`type-option ${generationType === 'mcq' ? 'active' : ''}`}>
+                  <label
+                    className={`type-option ${
+                      generationType === "mcq" ? "active" : ""
+                    }`}
+                  >
                     <input
                       type="radio"
                       name="type"
                       value="mcq"
-                      checked={generationType === 'mcq'}
+                      checked={generationType === "mcq"}
                       onChange={(e) => setGenerationType(e.target.value)}
                     />
                     <span className="option-icon">❓</span>
                     <span className="option-label">MCQs</span>
                   </label>
 
-                  <label className={`type-option ${generationType === 'qa' ? 'active' : ''}`}>
+                  <label
+                    className={`type-option ${
+                      generationType === "qa" ? "active" : ""
+                    }`}
+                  >
                     <input
                       type="radio"
                       name="type"
                       value="qa"
-                      checked={generationType === 'qa'}
+                      checked={generationType === "qa"}
                       onChange={(e) => setGenerationType(e.target.value)}
                     />
                     <span className="option-icon">💬</span>
                     <span className="option-label">Q&A</span>
                   </label>
 
-                  <label className={`type-option ${generationType === 'notes' ? 'active' : ''}`}>
+                  <label
+                    className={`type-option ${
+                      generationType === "notes" ? "active" : ""
+                    }`}
+                  >
                     <input
                       type="radio"
                       name="type"
                       value="notes"
-                      checked={generationType === 'notes'}
+                      checked={generationType === "notes"}
                       onChange={(e) => setGenerationType(e.target.value)}
                     />
                     <span className="option-icon">📚</span>
@@ -227,7 +263,16 @@ const Generator = () => {
                       <div className="file-info">
                         <span className="file-icon">📄</span>
                         <span className="file-name">{selectedFile.name}</span>
-                        <button className="btn-remove" onClick={(e) => { e.preventDefault(); setSelectedFile(null); setInputText(''); }}>✕</button>
+                        <button
+                          className="btn-remove"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setSelectedFile(null);
+                            setInputText("");
+                          }}
+                        >
+                          ✕
+                        </button>
                       </div>
                     ) : (
                       <>
@@ -262,9 +307,15 @@ const Generator = () => {
 
               {/* Generate Button */}
               <button
-                className={`btn-generate-main ${isGenerating ? 'generating' : ''}`}
+                className={`btn-generate-main ${
+                  isGenerating ? "generating" : ""
+                }`}
                 onClick={handleGenerate}
-                disabled={(!selectedFile && !inputText) || isGenerating || isExtractingPDF}
+                disabled={
+                  (!selectedFile && !inputText) ||
+                  isGenerating ||
+                  isExtractingPDF
+                }
               >
                 {isGenerating ? (
                   <>
@@ -283,8 +334,15 @@ const Generator = () => {
                 <h2>Generated Result</h2>
                 {result && !result.error && (
                   <div className="output-actions">
-                    <button className="btn-action" onClick={handleDownloadResult}>📥 Download</button>
-                    <button className="btn-action" onClick={handleCopyResult}>� Copy</button>
+                    <button
+                      className="btn-action"
+                      onClick={handleDownloadResult}
+                    >
+                      📥 Download
+                    </button>
+                    <button className="btn-action" onClick={handleCopyResult}>
+                      � Copy
+                    </button>
                   </div>
                 )}
               </div>
@@ -294,14 +352,19 @@ const Generator = () => {
                   <div className="empty-state">
                     <div className="empty-icon">🤖</div>
                     <h3>No content generated yet</h3>
-                    <p>Upload a document or paste text to generate study materials</p>
+                    <p>
+                      Upload a document or paste text to generate study
+                      materials
+                    </p>
                   </div>
                 ) : (
                   <div className="result-content">
-                    <div className="result-type-badge">{result.type.toUpperCase()}</div>
-                    
+                    <div className="result-type-badge">
+                      {result.type.toUpperCase()}
+                    </div>
+
                     {/* Render Summary */}
-                    {result.type === 'summary' && result.content.short && (
+                    {result.type === "summary" && result.content.short && (
                       <div className="summary-result">
                         <div className="summary-section">
                           <h3>📝 Short Summary</h3>
@@ -319,7 +382,7 @@ const Generator = () => {
                     )}
 
                     {/* Render MCQs */}
-                    {result.type === 'mcq' && result.content.mcqs && (
+                    {result.type === "mcq" && result.content.mcqs && (
                       <div className="mcq-result">
                         {result.content.mcqs.map((mcq, idx) => (
                           <div key={idx} className="mcq-item">
@@ -327,15 +390,31 @@ const Generator = () => {
                             <p className="mcq-question">{mcq.question}</p>
                             <div className="options">
                               {mcq.options.map((option, optIdx) => (
-                                <label key={optIdx} className={mcq.answer === String.fromCharCode(65 + optIdx) ? 'correct-answer' : ''}>
-                                  <input type="radio" name={`q${idx}`} disabled />
-                                  <span>{String.fromCharCode(65 + optIdx)}. {option}</span>
+                                <label
+                                  key={optIdx}
+                                  className={
+                                    mcq.answer ===
+                                    String.fromCharCode(65 + optIdx)
+                                      ? "correct-answer"
+                                      : ""
+                                  }
+                                >
+                                  <input
+                                    type="radio"
+                                    name={`q${idx}`}
+                                    disabled
+                                  />
+                                  <span>
+                                    {String.fromCharCode(65 + optIdx)}. {option}
+                                  </span>
                                 </label>
                               ))}
                             </div>
                             <div className="mcq-answer">
                               <strong>Answer: {mcq.answer}</strong>
-                              {mcq.explanation && <p className="explanation">{mcq.explanation}</p>}
+                              {mcq.explanation && (
+                                <p className="explanation">{mcq.explanation}</p>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -343,14 +422,18 @@ const Generator = () => {
                     )}
 
                     {/* Render Q&A */}
-                    {result.type === 'qa' && result.content.short && (
+                    {result.type === "qa" && result.content.short && (
                       <div className="qa-result">
                         <div className="qa-section">
                           <h3>📝 Short Answer Questions</h3>
                           {result.content.short.map((item, idx) => (
                             <div key={idx} className="qa-item">
-                              <p className="question"><strong>Q{idx + 1}:</strong> {item.q}</p>
-                              <p className="answer"><strong>A:</strong> {item.a}</p>
+                              <p className="question">
+                                <strong>Q{idx + 1}:</strong> {item.q}
+                              </p>
+                              <p className="answer">
+                                <strong>A:</strong> {item.a}
+                              </p>
                             </div>
                           ))}
                         </div>
@@ -358,8 +441,12 @@ const Generator = () => {
                           <h3>📚 Long Answer Questions</h3>
                           {result.content.long.map((item, idx) => (
                             <div key={idx} className="qa-item">
-                              <p className="question"><strong>Q{idx + 1}:</strong> {item.q}</p>
-                              <p className="answer"><strong>A:</strong> {item.a}</p>
+                              <p className="question">
+                                <strong>Q{idx + 1}:</strong> {item.q}
+                              </p>
+                              <p className="answer">
+                                <strong>A:</strong> {item.a}
+                              </p>
                             </div>
                           ))}
                         </div>
@@ -367,7 +454,7 @@ const Generator = () => {
                     )}
 
                     {/* Render Notes */}
-                    {result.type === 'notes' && result.content.key_points && (
+                    {result.type === "notes" && result.content.key_points && (
                       <div className="notes-result">
                         <div className="notes-section">
                           <h3>🎯 Key Points</h3>
@@ -377,48 +464,56 @@ const Generator = () => {
                             ))}
                           </ul>
                         </div>
-                        {result.content.formulas && result.content.formulas.length > 0 && (
-                          <div className="notes-section">
-                            <h3>🔢 Formulas</h3>
-                            <ul>
-                              {result.content.formulas.map((formula, idx) => (
-                                <li key={idx}>{formula}</li>
+                        {result.content.formulas &&
+                          result.content.formulas.length > 0 && (
+                            <div className="notes-section">
+                              <h3>🔢 Formulas</h3>
+                              <ul>
+                                {result.content.formulas.map((formula, idx) => (
+                                  <li key={idx}>{formula}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        {result.content.terms &&
+                          result.content.terms.length > 0 && (
+                            <div className="notes-section">
+                              <h3>📖 Key Terms</h3>
+                              {result.content.terms.map((term, idx) => (
+                                <div key={idx} className="term-item">
+                                  <strong>{term.term}:</strong>{" "}
+                                  {term.definition}
+                                </div>
                               ))}
-                            </ul>
-                          </div>
-                        )}
-                        {result.content.terms && result.content.terms.length > 0 && (
-                          <div className="notes-section">
-                            <h3>📖 Key Terms</h3>
-                            {result.content.terms.map((term, idx) => (
-                              <div key={idx} className="term-item">
-                                <strong>{term.term}:</strong> {term.definition}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        {result.content.concepts && result.content.concepts.length > 0 && (
-                          <div className="notes-section">
-                            <h3>💡 Core Concepts</h3>
-                            <ul>
-                              {result.content.concepts.map((concept, idx) => (
-                                <li key={idx}>{concept}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+                            </div>
+                          )}
+                        {result.content.concepts &&
+                          result.content.concepts.length > 0 && (
+                            <div className="notes-section">
+                              <h3>💡 Core Concepts</h3>
+                              <ul>
+                                {result.content.concepts.map((concept, idx) => (
+                                  <li key={idx}>{concept}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
                       </div>
                     )}
 
                     {/* Render Practice Questions */}
-                    {result.type === 'practice' && result.content.easy && (
+                    {result.type === "practice" && result.content.easy && (
                       <div className="practice-result">
                         <div className="difficulty-section easy">
                           <h3>🟢 Easy Questions</h3>
                           {result.content.easy.map((item, idx) => (
                             <div key={idx} className="practice-item">
-                              <p className="question"><strong>Q{idx + 1}:</strong> {item.q}</p>
-                              <p className="answer"><strong>A:</strong> {item.a}</p>
+                              <p className="question">
+                                <strong>Q{idx + 1}:</strong> {item.q}
+                              </p>
+                              <p className="answer">
+                                <strong>A:</strong> {item.a}
+                              </p>
                             </div>
                           ))}
                         </div>
@@ -426,8 +521,12 @@ const Generator = () => {
                           <h3>🟡 Medium Questions</h3>
                           {result.content.medium.map((item, idx) => (
                             <div key={idx} className="practice-item">
-                              <p className="question"><strong>Q{idx + 1}:</strong> {item.q}</p>
-                              <p className="answer"><strong>A:</strong> {item.a}</p>
+                              <p className="question">
+                                <strong>Q{idx + 1}:</strong> {item.q}
+                              </p>
+                              <p className="answer">
+                                <strong>A:</strong> {item.a}
+                              </p>
                             </div>
                           ))}
                         </div>
@@ -435,8 +534,12 @@ const Generator = () => {
                           <h3>🔴 Hard Questions</h3>
                           {result.content.hard.map((item, idx) => (
                             <div key={idx} className="practice-item">
-                              <p className="question"><strong>Q{idx + 1}:</strong> {item.q}</p>
-                              <p className="answer"><strong>A:</strong> {item.a}</p>
+                              <p className="question">
+                                <strong>Q{idx + 1}:</strong> {item.q}
+                              </p>
+                              <p className="answer">
+                                <strong>A:</strong> {item.a}
+                              </p>
                             </div>
                           ))}
                         </div>
@@ -447,7 +550,7 @@ const Generator = () => {
                     {result.content.error && (
                       <div className="raw-output">
                         <h3>⚠️ Could not parse structured output</h3>
-                        <pre>{result.content.raw || 'No output received'}</pre>
+                        <pre>{result.content.raw || "No output received"}</pre>
                       </div>
                     )}
                   </div>

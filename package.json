@@ -4,6 +4,7 @@
   "description": "AI-Powered Study Material Generator",
   "private": true,
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "axios": "^1.6.0",
     "pdfjs-dist": "^5.4.394",
     "react": "^18.2.0",
