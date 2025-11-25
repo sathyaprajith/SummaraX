@@ -259,7 +259,7 @@ export async function generateContent(type, text) {
       temperature: 0.7,
       topK: 40,
       topP: 0.95,
-      maxOutputTokens: 4096, // Increased for longer responses
+      maxOutputTokens: 8192, // Increased for longer responses
     }
   };
 

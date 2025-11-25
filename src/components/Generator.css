@@ -216,15 +216,54 @@
   margin-bottom: 25px;
 }
 
+.upload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
 .upload-section h3,
 .text-section h3 {
   font-size: 16px;
-  margin-bottom: 12px;
+  margin: 0;
   color: #000;
 }
 
 .generator.dark-mode .upload-section h3,
 .generator.dark-mode .text-section h3 {
+  color: #fff;
+}
+
+.file-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-file-action {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #666;
+}
+
+.btn-file-action:hover {
+  background: #e0e0e0;
+  color: #000;
+}
+
+.generator.dark-mode .btn-file-action {
+  background: #2a2a2a;
+  border-color: #444;
+  color: #aaa;
+}
+
+.generator.dark-mode .btn-file-action:hover {
+  background: #333;
   color: #fff;
 }
 
@@ -619,6 +658,191 @@
 
 .generator.dark-mode .status-text {
   color: #66bb6a;
+}
+
+/* Uploaded Files List */
+.uploaded-files-list {
+  margin-top: 20px;
+  background: #f9f9f9;
+  border-radius: 12px;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+}
+
+.generator.dark-mode .uploaded-files-list {
+  background: #1a1a1a;
+  border-color: #333;
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.generator.dark-mode .list-header {
+  border-bottom-color: #333;
+}
+
+.list-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000;
+}
+
+.generator.dark-mode .list-title {
+  color: #fff;
+}
+
+.list-subtitle {
+  font-size: 13px;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 2px solid #e0e0e0;
+  transition: all 0.3s;
+}
+
+.file-item:last-child {
+  margin-bottom: 0;
+}
+
+.file-item.selected {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.generator.dark-mode .file-item {
+  background: #0f0f0f;
+  border-color: #333;
+}
+
+.generator.dark-mode .file-item.selected {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.file-checkbox {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.file-checkbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.checkbox-custom {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  background: #fff;
+}
+
+.generator.dark-mode .checkbox-custom {
+  background: #2a2a2a;
+  border-color: #444;
+}
+
+.file-checkbox input:checked ~ .checkbox-custom {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+}
+
+.file-checkbox input:checked ~ .checkbox-custom::after {
+  content: "✓";
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.file-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.file-icon-small {
+  font-size: 16px;
+}
+
+.file-name-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.generator.dark-mode .file-name-text {
+  color: #fff;
+}
+
+.file-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: #999;
+}
+
+.btn-remove-file {
+  background: #fee;
+  color: #c33;
+  border: 1px solid #fcc;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.btn-remove-file:hover {
+  background: #fdd;
+  border-color: #faa;
+}
+
+.generator.dark-mode .btn-remove-file {
+  background: #4a1a1a;
+  border-color: #8a3a3a;
+  color: #ff6b6b;
+}
+
+.generator.dark-mode .btn-remove-file:hover {
+  background: #5a2a2a;
+  border-color: #aa4a4a;
 }
 
 /* Error Message */

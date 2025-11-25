@@ -2,19 +2,19 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Generator.css";
 import ThemeSwitch from "./ThemeSwitch";
-import { useTheme } from "../context/ThemeContext";
 import { generateContent, isAPIConfigured, getAPIKeyInfo } from "../api/gemini";
 import { extractTextFromFile, isPDF } from "../utils/pdfExtract";
+import { useTheme } from "../context/ThemeContext";
 
 const Generator = () => {
   const { isDarkMode } = useTheme();
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [inputText, setInputText] = useState("");
-  const [generationType, setGenerationType] = useState("summary");
+  const [uploadedFiles, setUploadedFiles] = useState([]); // Array of {file, text, selected, id}
+  const [inputText, setInputText] = useState('');
+  const [generationType, setGenerationType] = useState('summary');
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-  const [isExtractingPDF, setIsExtractingPDF] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
   const [apiKeyInfo, setApiKeyInfo] = useState({ total: 0, current: 1 });
   const navigate = useNavigate();
 
@@ -24,35 +24,69 @@ const Generator = () => {
   }, []);
 
   const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      setError(null);
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
 
-      // If it's a PDF, extract text immediately
-      if (isPDF(file)) {
-        setIsExtractingPDF(true);
-        try {
-          const extractedText = await extractTextFromFile(file);
-          setInputText(extractedText);
-          setError(null);
-        } catch (err) {
-          setError(`PDF extraction failed: ${err.message}`);
-          setSelectedFile(null);
-        } finally {
-          setIsExtractingPDF(false);
-        }
-      } else {
-        // For text files, extract on generate
-        try {
-          const extractedText = await extractTextFromFile(file);
-          setInputText(extractedText);
-        } catch (err) {
-          setError(`File reading failed: ${err.message}`);
-          setSelectedFile(null);
-        }
+    setError(null);
+    setIsExtracting(true);
+
+    const newFiles = [];
+
+    for (const file of files) {
+      try {
+        const extractedText = await extractTextFromFile(file);
+        newFiles.push({
+          id: Date.now() + Math.random(), // Unique ID
+          file: file,
+          text: extractedText,
+          selected: true, // Selected by default
+          name: file.name,
+          size: file.size,
+          type: file.type
+        });
+      } catch (err) {
+        setError(`Failed to extract ${file.name}: ${err.message}`);
       }
     }
+
+    setUploadedFiles(prev => [...prev, ...newFiles]);
+    setIsExtracting(false);
+
+    // Clear the input to allow re-uploading the same file
+    e.target.value = '';
+  };
+
+  const toggleFileSelection = (id) => {
+    setUploadedFiles(prev =>
+      prev.map(file =>
+        file.id === id ? { ...file, selected: !file.selected } : file
+      )
+    );
+  };
+
+  const removeFile = (id) => {
+    setUploadedFiles(prev => prev.filter(file => file.id !== id));
+  };
+
+  const selectAllFiles = () => {
+    setUploadedFiles(prev => prev.map(file => ({ ...file, selected: true })));
+  };
+
+  const deselectAllFiles = () => {
+    setUploadedFiles(prev => prev.map(file => ({ ...file, selected: false })));
+  };
+
+  const getSelectedText = () => {
+    const selectedFiles = uploadedFiles.filter(f => f.selected);
+    if (selectedFiles.length === 0 && inputText.trim()) {
+      return inputText;
+    }
+    
+    const combinedText = selectedFiles.map(f => 
+      `--- ${f.name} ---\n${f.text}`
+    ).join('\n\n');
+    
+    return combinedText || inputText;
   };
 
   const handleGenerate = async () => {
@@ -62,10 +96,44 @@ const Generator = () => {
       return;
     }
 
+    // Get combined text from selected files or manual input
+    let textToAnalyze = getSelectedText();
+
     // Check if there's input
-    if (!inputText || inputText.trim().length === 0) {
-      setError("Please provide some text or upload a file");
+    if (!textToAnalyze || textToAnalyze.trim().length === 0) {
+      setError("Please provide some text or upload and select files");
       return;
+    }
+
+    // Check if any files are selected
+    const selectedCount = uploadedFiles.filter(f => f.selected).length;
+    if (uploadedFiles.length > 0 && selectedCount === 0) {
+      setError("Please select at least one file to analyze");
+      return;
+    }
+
+    // Warn about very large text (more than 20,000 characters)
+    if (textToAnalyze.length > 20000) {
+      const shouldContinue = window.confirm(
+        `⚠️ Large Document Detected (${textToAnalyze.length.toLocaleString()} characters)\n\n` +
+        `This may take longer to process and could hit API limits.\n\n` +
+        `Options:\n` +
+        `• Click OK to use first 20,000 characters\n` +
+        `• Click Cancel to select fewer files\n\n` +
+        `Tip: Try selecting 1-2 files at a time for better results.`
+      );
+      
+      if (!shouldContinue) {
+        return;
+      }
+      
+      // Truncate to 20,000 characters with smart sentence boundary
+      textToAnalyze = textToAnalyze.substring(0, 20000);
+      const lastPeriod = textToAnalyze.lastIndexOf('.');
+      if (lastPeriod > 15000) {
+        textToAnalyze = textToAnalyze.substring(0, lastPeriod + 1);
+      }
+      textToAnalyze += "\n\n[Note: Text truncated to 20,000 characters]";
     }
 
     setIsGenerating(true);
@@ -74,7 +142,7 @@ const Generator = () => {
 
     try {
       // Call Gemini API
-      const generatedContent = await generateContent(generationType, inputText);
+      const generatedContent = await generateContent(generationType, textToAnalyze);
 
       setResult({
         type: generationType,
@@ -82,7 +150,18 @@ const Generator = () => {
         raw: generatedContent.raw || null,
       });
     } catch (err) {
-      setError(err.message);
+      // Better error message for MAX_TOKENS
+      if (err.message.includes('MAX_TOKENS')) {
+        setError(
+          "⚠️ Document too large! The AI ran out of tokens.\n\n" +
+          "Solutions:\n" +
+          "• Select fewer files (try 1-2 at a time)\n" +
+          "• Split large documents into smaller sections\n" +
+          "• Use shorter text for generation"
+        );
+      } else {
+        setError(err.message);
+      }
       console.error("Generation error:", err);
     } finally {
       setIsGenerating(false);
@@ -243,46 +322,103 @@ const Generator = () => {
 
               {/* Upload Area */}
               <div className="upload-section">
-                <h3>Upload Document</h3>
+                <div className="upload-header">
+                  <h3>Upload Documents</h3>
+                  {uploadedFiles.length > 0 && (
+                    <div className="file-actions">
+                      <button className="btn-file-action" onClick={selectAllFiles}>
+                        ✓ Select All
+                      </button>
+                      <button className="btn-file-action" onClick={deselectAllFiles}>
+                        ✗ Deselect All
+                      </button>
+                    </div>
+                  )}
+                </div>
+                
                 <div className="upload-area">
                   <input
                     type="file"
                     id="file-upload"
-                    accept=".pdf,.txt"
+                    accept=".pdf,.txt,.doc,.docx,.jpg,.jpeg,.png,.gif,.bmp,.webp"
                     onChange={handleFileUpload}
+                    multiple
                     hidden
-                    disabled={isExtractingPDF}
+                    disabled={isExtracting}
                   />
                   <label htmlFor="file-upload" className="upload-box">
-                    {isExtractingPDF ? (
+                    {isExtracting ? (
                       <div className="file-info">
                         <span className="spinner"></span>
-                        <span>Extracting PDF text...</span>
-                      </div>
-                    ) : selectedFile ? (
-                      <div className="file-info">
-                        <span className="file-icon">📄</span>
-                        <span className="file-name">{selectedFile.name}</span>
-                        <button
-                          className="btn-remove"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setSelectedFile(null);
-                            setInputText("");
-                          }}
-                        >
-                          ✕
-                        </button>
+                        <span>Extracting text with OCR...</span>
                       </div>
                     ) : (
                       <>
                         <div className="upload-icon">📤</div>
                         <p>Click to upload or drag and drop</p>
-                        <span className="upload-hint">PDF, TXT (Max 10MB)</span>
+                        <span className="upload-hint">
+                          PDF, Word, TXT, Images (JPG, PNG) • OCR enabled • Multiple files supported
+                        </span>
                       </>
                     )}
                   </label>
                 </div>
+
+                {/* Uploaded Files List */}
+                {uploadedFiles.length > 0 && (
+                  <div className="uploaded-files-list">
+                    <div className="list-header">
+                      <span className="list-title">
+                        {uploadedFiles.length} file{uploadedFiles.length > 1 ? 's' : ''} uploaded
+                      </span>
+                      <span className="list-subtitle">
+                        {uploadedFiles.filter(f => f.selected).length} selected • {' '}
+                        {uploadedFiles.filter(f => f.selected).reduce((sum, f) => sum + f.text.length, 0).toLocaleString()} characters
+                        {uploadedFiles.filter(f => f.selected).reduce((sum, f) => sum + f.text.length, 0) > 20000 && 
+                          <span style={{color: '#ff6b6b', marginLeft: '8px'}}>⚠️ Large</span>
+                        }
+                      </span>
+                    </div>
+                    {uploadedFiles.map(file => (
+                      <div
+                        key={file.id}
+                        className={`file-item ${file.selected ? 'selected' : ''}`}
+                      >
+                        <label className="file-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={file.selected}
+                            onChange={() => toggleFileSelection(file.id)}
+                          />
+                          <span className="checkbox-custom"></span>
+                        </label>
+                        
+                        <div className="file-details">
+                          <div className="file-name-row">
+                            <span className="file-icon-small">
+                              {file.type === 'application/pdf' ? '📕' : 
+                               file.type.includes('word') ? '📘' : '📄'}
+                            </span>
+                            <span className="file-name-text">{file.name}</span>
+                          </div>
+                          <div className="file-meta">
+                            <span>{(file.size / 1024).toFixed(1)} KB</span>
+                            <span>•</span>
+                            <span>{file.text.length} characters</span>
+                          </div>
+                        </div>
+
+                        <button
+                          className="btn-remove-file"
+                          onClick={() => removeFile(file.id)}
+                          title="Remove file"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Text Input */}
@@ -312,9 +448,9 @@ const Generator = () => {
                 }`}
                 onClick={handleGenerate}
                 disabled={
-                  (!selectedFile && !inputText) ||
+                  (uploadedFiles.length === 0 && !inputText) ||
                   isGenerating ||
-                  isExtractingPDF
+                  isExtracting
                 }
               >
                 {isGenerating ? (

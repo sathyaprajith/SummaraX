@@ -57,8 +57,10 @@ The app will open at `http://localhost:3000`
 - Medium level (3 questions)
 - Hard level (3 questions)
 
-### ✅ PDF Support
-- Upload PDF files
+### ✅ Multiple File Format Support
+- Upload PDF files (.pdf)
+- Upload Word documents (.doc, .docx)
+- Upload text files (.txt)
 - Automatic text extraction
 - Process up to 15,000 characters
 
@@ -80,9 +82,11 @@ The app will open at `http://localhost:3000`
 - Ensure no spaces before/after the key
 - Restart the development server after changing `.env`
 
-### PDF Not Extracting
-- Ensure the PDF contains selectable text (not scanned images)
-- Try a smaller PDF file
+### File Not Extracting
+- **PDF**: Ensure the PDF contains selectable text (not scanned images)
+- **Word**: Only .docx files (newer format) are fully supported
+- **Text**: Make sure the file is not empty
+- Try a smaller file
 - Check browser console for errors
 
 ### Generation Taking Too Long
