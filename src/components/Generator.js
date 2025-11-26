@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Generator.css";
 import ThemeSwitch from "./ThemeSwitch";
+import MindMapView from "./MindMapView";
+import AdvancedMindMap from "./AdvancedMindMap";
 import { generateContent, isAPIConfigured, getAPIKeyInfo } from "../api/gemini";
+import { generateMindMap, getAIModelInfo } from "../api/mindmap";
 import { extractTextFromFile, isPDF } from "../utils/pdfExtract";
 import { useTheme } from "../context/ThemeContext";
 
@@ -141,8 +144,20 @@ const Generator = () => {
     setResult(null);
 
     try {
-      // Call Gemini API
-      const generatedContent = await generateContent(generationType, textToAnalyze);
+      let generatedContent;
+      
+      // Use specialized mind map generation for mindmap type
+      if (generationType === 'mindmap') {
+        console.log('Generating advanced mind map...');
+        generatedContent = await generateMindMap(textToAnalyze, {
+          preferClaude: true,
+          maxNodes: 30,
+          maxDepth: 4
+        });
+      } else {
+        // Use regular Gemini API for other types
+        generatedContent = await generateContent(generationType, textToAnalyze);
+      }
 
       setResult({
         type: generationType,
@@ -316,6 +331,38 @@ const Generator = () => {
                     />
                     <span className="option-icon">📚</span>
                     <span className="option-label">Notes</span>
+                  </label>
+
+                  <label
+                    className={`type-option ${
+                      generationType === "practice" ? "active" : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="type"
+                      value="practice"
+                      checked={generationType === "practice"}
+                      onChange={(e) => setGenerationType(e.target.value)}
+                    />
+                    <span className="option-icon">✏️</span>
+                    <span className="option-label">Practice</span>
+                  </label>
+
+                  <label
+                    className={`type-option ${
+                      generationType === "mindmap" ? "active" : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="type"
+                      value="mindmap"
+                      checked={generationType === "mindmap"}
+                      onChange={(e) => setGenerationType(e.target.value)}
+                    />
+                    <span className="option-icon">🗺️</span>
+                    <span className="option-label">Mind Map</span>
                   </label>
                 </div>
               </div>
@@ -680,6 +727,11 @@ const Generator = () => {
                           ))}
                         </div>
                       </div>
+                    )}
+
+                    {/* Render Mind Map */}
+                    {result.type === "mindmap" && result.content.nodes && (
+                      <AdvancedMindMap data={result.content} />
                     )}
 
                     {/* Show raw output if parsing failed */}

@@ -1,5 +1,5 @@
 # OCR Feature - Implementation Summary
-
+   
 ## What Was Added
 
 ### 1. New Dependency

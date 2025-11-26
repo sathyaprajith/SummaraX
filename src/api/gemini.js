@@ -108,8 +108,51 @@ Generate 3 questions for each difficulty level.
 Educational Content:
 ${maxInput}`;
 
+    case "mindmap":
+      return `You are an expert knowledge mapper. Create a comprehensive mind map from the following educational content.
+
+Return ONLY valid JSON in this exact format:
+{
+  "nodes": [
+    {
+      "id": "node1",
+      "label": "Central Topic",
+      "level": 0,
+      "citations": [{"file": "source_file.pdf", "start": 0, "end": 100}]
+    },
+    {
+      "id": "node2", 
+      "label": "Main Concept",
+      "level": 1,
+      "citations": [{"file": "source_file.pdf", "start": 150, "end": 250}]
+    }
+  ],
+  "edges": [
+    {
+      "source": "node1",
+      "target": "node2",
+      "label": "relates to"
+    }
+  ]
+}
+
+RULES:
+1. Create 10-20 nodes maximum for clarity
+2. Level 0: 1 root node (main topic)
+3. Level 1: 3-5 major concepts  
+4. Level 2: 4-8 sub-concepts
+5. Level 3: 2-6 specific details or examples
+6. Keep labels concise (2-6 words max)
+7. Use meaningful relationship labels: "leads to", "part of", "example of", "causes", "requires", etc.
+8. Create 15-30 edges showing clear relationships
+9. Extract file citations from "--- filename ---" markers in content
+10. Ensure hierarchical structure flows from general to specific
+
+Educational Content:
+${maxInput}`;
+
     default:
-      return `Generate structured study material from the following content:\n${maxInput}`;
+      return `Analyze the following educational content and provide insights:\n\n${maxInput}`;
   }
 }
 
