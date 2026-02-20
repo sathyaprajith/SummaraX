@@ -16,7 +16,7 @@ Transform your educational content into exam-ready study materials using cutting
 
 ## 📖 Overview
 
-**SummaraX** is an AI-driven web application that transforms large educational content—textbook chapters, PDFs, notes, and typed text—into comprehensive, exam-ready study materials. Powered by state-of-the-art NLP models from Hugging Face, SummaraX helps students study smarter, not harder.
+**SummaraX** is an AI-driven web application that transforms large educational content—textbook chapters, PDFs, notes, and typed text—into comprehensive, exam-ready study materials. Powered by state-of-the-art NLP models  Hugging Face, SummaraX helps students study smarter, not harder.
 
 ### What SummaraX Generates
 
